@@ -2,9 +2,13 @@ use std::fs::{File, OpenOptions};
 use std::io;
 use std::io::{Read, Seek, SeekFrom, Write};
 use std::path::Path;
+use zerocopy::{AsBytes, FromBytes};
+
 
 pub const PAGE_SIZE: usize = 4096;
 
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, FromBytes, AsBytes)]
+#[repr(C)]
 pub struct PageId(pub u64);
 
 impl PageId {
@@ -16,6 +20,16 @@ impl PageId {
         } else {
             Some(self)
         }
+    }
+
+    pub fn to_u64(self) -> u64 {
+        self.0
+    }
+}
+
+impl Default for PageId {
+    fn default() -> Self {
+        Self::INVALID_PAGE_ID
     }
 }
 
@@ -36,7 +50,7 @@ impl DiskManager {
     }
 
     /// ファイルパスを指定して開く
-    pub fn open(data_file_path: impl AsRef<Path>) -> io::Result<Self> {
+    pub fn open(heap_file_path: impl AsRef<Path>) -> io::Result<Self> {
         let heap_file = OpenOptions::new()
             .read(true)
             .write(true)
