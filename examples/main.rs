@@ -1,4 +1,4 @@
 
 fn main() {
-    print!("The sum is {}", 80 + 34);
+    println!("Hello World!");
 }
