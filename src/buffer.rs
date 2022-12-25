@@ -151,7 +151,7 @@ impl BufferPoolManager {
         let evict_page_id = frame.buffer.page_id;
         let page_id = {
             let buffer = Rc::get_mut(&mut frame.buffer).unwrap();
-            if (buffer.is_dirty.get()) {
+            if buffer.is_dirty.get() {
                 self.disk
                     .write_page_data(evict_page_id, buffer.page.get_mut())?;
             }

@@ -1,6 +1,5 @@
 use std::mem::size_of;
 use std::ops::{Index, IndexMut, Range};
-use std::os::unix::raw::uid_t;
 use zerocopy::{AsBytes, ByteSlice, ByteSliceMut, FromBytes, LayoutVerified};
 
 #[derive(Debug, FromBytes, AsBytes)]
