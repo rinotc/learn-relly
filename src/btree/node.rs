@@ -1,7 +1,6 @@
-use std::intrinsics::unreachable;
-use zerocopy::{AsBytes, ByteSlice, ByteSliceMut, FromBytes, LayoutVerified};
 use crate::btree::branch::Branch;
 use crate::btree::leaf::Leaf;
+use zerocopy::{AsBytes, ByteSlice, ByteSliceMut, FromBytes, LayoutVerified};
 
 pub const NODE_TYPE_LEAF: [u8; 8] = *b"LEAF    ";
 pub const NODE_TYPE_BRANCH: [u8; 8] = *b"BRANCH  ";

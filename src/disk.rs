@@ -4,7 +4,6 @@ use std::io::{Read, Seek, SeekFrom, Write};
 use std::path::Path;
 use zerocopy::{AsBytes, FromBytes};
 
-
 pub const PAGE_SIZE: usize = 4096;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, FromBytes, AsBytes)]
@@ -33,6 +32,19 @@ impl Default for PageId {
     }
 }
 
+impl From<Option<PageId>> for PageId {
+    fn from(page_id: Option<PageId>) -> Self {
+        page_id.unwrap_or_default()
+    }
+}
+
+impl From<&[u8]> for PageId {
+    fn from(bytes: &[u8]) -> Self {
+        let arr = bytes.try_into().unwrap();
+        PageId(u64::from_ne_bytes(arr))
+    }
+}
+
 pub struct DiskManager {
     /// ヒープファイルのファイルディスクリプタ
     heap_file: File,
@@ -46,7 +58,10 @@ impl DiskManager {
         // ファイルサイズを取得
         let heap_file_size = heap_file.metadata()?.len();
         let next_page_id = heap_file_size / PAGE_SIZE as u64;
-        Ok(Self { heap_file, next_page_id })
+        Ok(Self {
+            heap_file,
+            next_page_id,
+        })
     }
 
     /// ファイルパスを指定して開く

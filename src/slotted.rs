@@ -34,7 +34,8 @@ pub struct Slotted<B> {
 
 impl<B: ByteSlice> Slotted<B> {
     pub fn new(bytes: B) -> Self {
-        let (header, body) = LayoutVerified::new_from_prefix(bytes).expect("slotted header must be aligned");
+        let (header, body) =
+            LayoutVerified::new_from_prefix(bytes).expect("slotted header must be aligned");
         Self { header, body }
     }
 
@@ -63,7 +64,7 @@ impl<B: ByteSlice> Slotted<B> {
     }
 }
 
-impl <B: ByteSliceMut> Slotted<B> {
+impl<B: ByteSliceMut> Slotted<B> {
     pub fn initialize(&mut self) {
         self.header.num_slots = 0;
         self.header.free_space_offset = self.body.len() as u16;
@@ -80,7 +81,7 @@ impl <B: ByteSliceMut> Slotted<B> {
 
     pub fn insert(&mut self, index: usize, len: usize) -> Option<()> {
         if self.free_space() < size_of::<Pointer>() + len {
-            return None
+            return None;
         }
         let num_slots_orig = self.num_slots();
         self.header.free_space_offset -= len as u16;
@@ -94,15 +95,21 @@ impl <B: ByteSliceMut> Slotted<B> {
         Some(())
     }
 
+    pub fn remove(&mut self, index: usize) {
+        self.resize(index, 0);
+        self.pointers_mut().copy_within(index + 1.., index);
+        self.header.num_slots -= 1;
+    }
+
     pub fn resize(&mut self, index: usize, len_new: usize) -> Option<()> {
         let pointers = self.pointers();
         let len_orig = pointers[index].len;
         let len_incr = len_new as isize - len_orig as isize;
         if len_incr == 0 {
-            return Some(())
+            return Some(());
         }
         if len_incr > self.free_space() as isize {
-            return None
+            return None;
         }
         let free_space_offset = self.header.free_space_offset as usize;
         let offset_orig = pointers[index].offset;
@@ -127,7 +134,7 @@ impl <B: ByteSliceMut> Slotted<B> {
     }
 }
 
-impl <B: ByteSlice> Index<usize> for Slotted<B> {
+impl<B: ByteSlice> Index<usize> for Slotted<B> {
     type Output = [u8];
 
     fn index(&self, index: usize) -> &Self::Output {
@@ -135,7 +142,7 @@ impl <B: ByteSlice> Index<usize> for Slotted<B> {
     }
 }
 
-impl <B: ByteSliceMut> IndexMut<usize> for Slotted<B> {
+impl<B: ByteSliceMut> IndexMut<usize> for Slotted<B> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         self.data_mut(self.pointers()[index])
     }
@@ -168,6 +175,5 @@ mod tests {
         assert_eq!(&slotted[1], b", ");
         assert_eq!(&slotted[2], b"world");
         assert_eq!(&slotted[3], b"!");
-
     }
 }
